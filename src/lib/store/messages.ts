@@ -1,5 +1,7 @@
 import { create } from "zustand";
 import Message from '../../components/Message';
+import { stat } from "fs";
+import { LIMIT_MESSAGES } from "../constant";
 
 // Define the structure of a message
 export type Imessage = {
@@ -18,6 +20,8 @@ export type Imessage = {
 
 // Define the state structure for messages
 interface messageState {
+  hasMore:boolean;
+  page: number; // Page number for pagination
   messages: Imessage[]; // Array of messages
   actionMessage : Imessage | undefined; // Message that is currently being acted upon (edit/delete)
   addMessage: (message:Imessage) => void; // Function to add a message
@@ -26,12 +30,23 @@ interface messageState {
   optimisticDeleteMessage:(messageId: string)=>void; // Function to delete a message optimistically
   optimisticEditMessage:(message:Imessage)=>void; // Function to edit a message optimistically
   setOptimisticId:(Id:string)=>void;
+  setMsgs:(messsages:Imessage[])=>void;
 }
 
 // Create a Zustand store for messages
 export const useMessage = create<messageState>()((set) => ({
+  hasMore:true,
+  page: 1, // Initial state for page
   messages: [], // Initial state for messages
   actionMessage: undefined, // Initial state for action message
+  setMsgs:(messages)=>{
+  set((state) => ({
+    // Add a new message to the existing messages
+    messages: [...state.messages, ...messages],
+    page: state.page + 1,
+    hasMore : messages.length >= LIMIT_MESSAGES ,
+  }));
+  },
   addMessage: (newMessage) => {
     set((state) => ({
       // Add a new message to the existing messages
