@@ -1,6 +1,6 @@
 "use client";
 import { Imessage, useMessage } from "@/lib/store/messages";
-import { useEffect, useRef, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import Message from './Message';
 import {DeleteAlert, EditAlert} from "./MessageActions";
 import { supabaseBrowser } from "@/lib/supabase/browser";
@@ -83,14 +83,14 @@ export default function ListMessages() {
       return () => {
         channel.unsubscribe();
       } 
-  }, []);
+  }, [addMessage, optimisticDeleteMessage, optimisticEditMessage,supabase]);
 
 	useEffect(() => {
     const scrollContainer = scrollRef.current;
     if (scrollContainer && !userScrolled) {
       scrollContainer.scrollTop = scrollContainer.scrollHeight;
     }
-  }, [messages]);
+  }, [messages,userScrolled]);
   
 
   
