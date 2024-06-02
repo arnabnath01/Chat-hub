@@ -12,6 +12,7 @@ export default function ListMessages() {
 
 
   const [userScrolled,setUserScrolled ] =useState(false);
+  const [notification, setNotification] = useState(0); 
  	const scrollRef = useRef() as React.MutableRefObject<HTMLDivElement>;
 
   const supabase = supabaseBrowser();
@@ -47,6 +48,15 @@ export default function ListMessages() {
               users: data,
             };
             addMessage(newMessage as Imessage);
+
+            const scrollContainer = scrollRef.current;
+            if(  scrollContainer.scrollTop<(scrollContainer.scrollHeight-scrollContainer.clientHeight-10)){
+              setNotification((prev)=>prev+1)
+            }
+            if(scrollContainer.scrollTop==(scrollContainer.scrollHeight-scrollContainer.clientHeight)){
+              setNotification(0)
+            }
+
           }
         }
       )
@@ -76,7 +86,7 @@ export default function ListMessages() {
 
 	useEffect(() => {
     const scrollContainer = scrollRef.current;
-    if (scrollContainer) {
+    if (scrollContainer && !userScrolled) {
       scrollContainer.scrollTop = scrollContainer.scrollHeight;
     }
   }, [messages]);
@@ -98,7 +108,9 @@ export default function ListMessages() {
 
   // click arrow to go down , till last chat
 const scrollDown  = ()=>
-{  scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+{  
+  setNotification(0);
+  scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
 
 }
   return (
@@ -116,22 +128,28 @@ const scrollDown  = ()=>
         </div>
       </div>
 
-      <div className="absolute w-full bottom-20 ">
-        {
-          userScrolled && (
-            <div className="w-10 h-10 bg-blue-500 rounded-full justify-center items-center flex mx-auto border cursor-pointer hover:scale-110 transition-all"
-            onClick={
-              scrollDown
-            }
-            >
-          <MoveDown />
-        </div>
-          )
-        }
-        
-      </div>
       <DeleteAlert />
       <EditAlert />
+
+      {userScrolled && (
+        <div className=" absolute bottom-20 w-full">
+          {notification ? (
+            <div
+              className="w-40 mx-auto bg-indigo-500 p-1 rounded-md cursor-pointer text-white"
+              onClick={scrollDown}
+            >
+              <h1>New {notification} messages</h1>
+            </div>
+          ) : (
+            <div
+              className="w-10 h-10 bg-blue-500 rounded-full justify-center items-center flex mx-auto border cursor-pointer hover:scale-110 transition-all"
+              onClick={scrollDown}
+            >
+              <MoveDown />
+            </div>
+          )}
+        </div>
+      )}
     </>
   );
 }
